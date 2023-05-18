@@ -155,7 +155,7 @@
                         </div>
                      </div>
                      <div class="mb-3">
-                        <label class="form-label">File Name:</label>
+                        <label class="form-label">File Name <small>(optional)</small>:</label>
                         <input type="text" name="fileName" class="form-control" placeholder="Enter file name">
                      </div>
                      <div class="mb-3">

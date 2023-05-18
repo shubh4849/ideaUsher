@@ -103,7 +103,7 @@ class UserController extends Controller
     {
         $columns = explode(',', $request->query('columns'));
         $fileFormat = $request->query('fileFormat');
-        $fileName = $request->query('fileName');
+        $fileName = $request->query('fileName') ?? 'users';
         $users = User::select($columns)->where('id', '<>', Auth::id())->get();
         if ($fileFormat === 'csv') {
             return Excel::download(new UserExport($users, $columns), $fileName . '.csv', \Maatwebsite\Excel\Excel::CSV);
