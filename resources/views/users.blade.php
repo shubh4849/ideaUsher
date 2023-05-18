@@ -6,19 +6,16 @@
       <link rel="stylesheet" href="https://cdn.datatables.net/1.10.24/css/dataTables.bootstrap4.min.css">
       <style>
          tr.status-sent td:nth-child(4) {
-         color: green;
+            color: green;
          }
          tr.status-processing td:nth-child(4) {
-         color: yellow;
+            color: yellow;
          }
          tr.status-queued td:nth-child(4) {
-         color: lightgrey;
+            color: lightgrey;
          }
          tr.status-failed td:nth-child(4) {
-         color: red;
-         }
-         tr.status-No Email Sent td:nth-child(4) {
-         color: red;
+            color: red;
          }
       </style>
       <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
