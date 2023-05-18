@@ -55,14 +55,7 @@ class EmailJobController extends Controller
                 return 'failed';
             }
         }
-        return '';
+        return 'No Email Sent';
     }
-
-    public function checkEmailStatus()
-    {
-        $allSent = EmailJob::where('status', '!=', 'sent')->doesntExist();
-        return response()->json([
-            'allSent' => $allSent,
-        ]);
-    }
+    
 }

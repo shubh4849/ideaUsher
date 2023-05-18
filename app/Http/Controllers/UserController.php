@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Hash;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\EmailJob;
+use Illuminate\Support\Facades\Log;
 use DataTables;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Support\Facades\Auth;
@@ -53,7 +54,6 @@ class UserController extends Controller
         if($request->isMethod('post')){
             $subject = 'Welcome Email';
             $body = 'Thank you for logging in. This is new email!';
-
             try {
                 $credentials = $request->only("email", "password");
                 $user = User::where("email", $request->email)->first();
@@ -68,12 +68,9 @@ class UserController extends Controller
 
                         $otherUsers = User::where('id', '<>', Auth::id())->get();
                         EmailJob::truncate();
-                        foreach ($otherUsers as $recipient) {
-                            $emailStatus = EmailJob::insertGetId(['recipient_email'=>$recipient->email]);
-                            dispatch(new SendEmailJob($subject, $body, $recipient->email, $emailStatus));
-                        }
-
-                        return redirect('/getUsers');
+                        $token = $user->createToken('authToken')->plainTextToken;
+                        Log::info('Token:',[$token]);
+                        return redirect('/getUsers')->with('token', $token);
                     }
                 }
                 throw new \Exception(
@@ -90,7 +87,8 @@ class UserController extends Controller
 
     public function index(Request $request)
     {
-        return view('users');
+        $users = User::where('id', '<>', Auth::id())->get();
+        return view('users', compact('users'));
     }
 
     public function logout()
