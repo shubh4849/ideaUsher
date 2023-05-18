@@ -39,7 +39,6 @@ class SendEmailJob implements ShouldQueue
         try {
             $this->updateEmailJobStatus('processing');
             Mail::send([], [], function ($message) use ($email) {
-                Log::info('iskogyi',[$email->recipientEmail]);
                 $message->to($email->recipientEmail)
                     ->subject($email->subject)
                     ->setBody($email->body);
