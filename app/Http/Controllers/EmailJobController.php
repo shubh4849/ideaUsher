@@ -13,7 +13,6 @@ class EmailJobController extends Controller
 
     public function index(Request $request)
     {
-        if($request->ajax()){
         $limit = $request->input('length') ?? 10;
         $start = $request->input('start') ?? 0;
 
@@ -38,15 +37,12 @@ class EmailJobController extends Controller
             'recordsFiltered' => User::count(),
             'data' => $data,
         ]);
-        }
-        return view('users');
     }
 
     private function getEmailStatus($email)
     {
         $emailJob = DB::table('email_jobs')
             ->where('recipient_email', $email)
-            ->orderByDesc('created_at')
             ->first();
         if ($emailJob) {
             if ($emailJob->status === 'queued') {
