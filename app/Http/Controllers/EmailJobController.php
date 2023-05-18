@@ -20,7 +20,6 @@ class EmailJobController extends Controller
             ->limit($limit)
             ->get();
 
-        // Prepare the data for the DataTable response
         $data = [];
         foreach ($users as $user) {
             $emailStatus = $this->getEmailStatus($user->email);
