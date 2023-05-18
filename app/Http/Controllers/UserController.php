@@ -5,13 +5,23 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Controllers\Controller;
-use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use App\Models\User;
+use App\Models\EmailJob;
 use DataTables;
+use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Support\Facades\Auth;
+use App\Jobs\SendEmailJob;
+use Illuminate\Support\Facades\DB;
+use App\Exports\UserExport;
+use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\Concerns\Exportable;
+
 
 class UserController extends Controller
 {
+    use AuthenticatesUsers;
+
+
     public function register(Request $request)
     {
         if($request->isMethod('post')){
@@ -19,18 +29,9 @@ class UserController extends Controller
             $password = Hash::make($data['password']);
             $data['password'] = $password;
             $user =  User::create($data);
-            Auth::login($user);
-            return redirect("/qrcode");
+            return redirect("/login");
         }
         return view('register');
-    }
-
-    public function generateQRCode()
-    {
-        $user = auth()->user();
-        $qrCode = QrCode::size(300)
-            ->generate("Name: {$user->name}, Email: {$user->email}, ID: {$user->id}");
-        return view('qrcode', ['qrCode' => $qrCode]);
     }
 
     public function emailCheck(Request $request)
@@ -46,54 +47,71 @@ class UserController extends Controller
         }
     }
 
+    
+    public function login(Request $request)
+    {
+        if($request->isMethod('post')){
+            $subject = 'Welcome Email';
+            $body = 'Thank you for logging in. This is new email!';
+
+            try {
+                $credentials = $request->only("email", "password");
+                $user = User::where("email", $request->email)->first();
+                $password = $user->password;
+                if (Hash::check($request->password, $user->password)) {
+                    if (
+                        Auth::attempt([
+                            "email" => $request->email,
+                            "password" => $request->password,
+                        ])
+                    ) {
+
+                    $otherUsers = User::where('id', '<>', Auth::id())->get();
+                    foreach ($otherUsers as $recipient) {
+                        $emailStatus = EmailJob::insertGetId(['recipient_email'=>$recipient->email]);
+                        dispatch(new SendEmailJob(
+                            $subject,
+                            $body,
+                            $recipient->email,
+                            $emailStatus
+                        ));
+                    }
+                    return redirect('/getUsers');
+                    }
+                }
+                throw new \Exception(
+                    "The provided credentials do not match our records."
+                );
+            } catch (\Exception $e) {
+                return back()->withErrors([
+                    "email" => $e->getMessage(),
+                ]);
+            }
+        }
+        return view('login');
+    }
+
     public function index(Request $request)
     {
-        if ($request->ajax()) {
-            $limit = $request->input('length');
-            $start = $request->input('start');
-            
-            $users = User::offset($start)
-                ->limit($limit)
-                ->get();
-                
-            $data = [];
-            foreach ($users as $user) {
-                $data[] = [
-                'name' => $user->name,
-                'email' => $user->email,
-                'image' => $user->profile_image,
-                'action' => "<button  data-id='$user->id' class='btn btn-xs btn-primary editBtn'>Edit</button>"
-                ];
-            }
-            
-            return response()->json([
-                'draw' => $request->input('draw'),
-                'recordsTotal' => User::count(),
-                'recordsFiltered' => User::count(),
-                'data' => $data,
-            ]);
-        }
         return view('users');
     }
 
-    public function edit($user)
+    public function logout()
     {
-        $user = User::where('id', $user)->first();
-        return response()->json($user);
+        Auth::logout();
+        return redirect("/login")->with("success", "Logged out successfully!");
     }
 
-    public function updateUser(Request $request)
+    public function export(Request $request)
     {
-        $data = $request->except('_token');
-        $image = $request->file('profile_image');
-        if(isset($image)) {
-            $random = rand(100000,999999);
-            $rightimage = time().'r'.$random.'.'.$request['profile_image']->getClientOriginalExtension();
-            $destination_path = userImage;
-            $image->move($destination_path,$rightimage);
-            $data['profile_image'] = $rightimage;
+        $columns = explode(',', $request->query('columns'));
+        $fileFormat = $request->query('fileFormat');
+        $fileName = $request->query('fileName');
+        $users = User::select($columns)->where('id', '<>', Auth::id())->get();
+        if ($fileFormat === 'csv') {
+            return Excel::download(new UserExport($users, $columns), $fileName . '.csv', \Maatwebsite\Excel\Excel::CSV);
+        } else {
+            return Excel::download(new UserExport($users, $columns), $fileName . '.xlsx', \Maatwebsite\Excel\Excel::XLSX);
         }
-        User::where('id', $request['id'])->update($data);
-        return redirect()->back();
     }
 }

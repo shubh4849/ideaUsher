@@ -1,0 +1,9 @@
+<service>
+    <id>laravel-queue-worker</id>
+    <name>Laravel Queue Worker</name>
+    <description>Runs the Laravel queue worker</description>
+    <executable>php</executable>
+    <arguments>C:/xampp/htdocs/webOconnect/artisan queue:work --daemon</arguments>
+    <logmode>rotate</logmode>
+    <logpath>C:/xampp/htdocs/webOconnect/storage/logs/worker.log</logpath>
+</service>

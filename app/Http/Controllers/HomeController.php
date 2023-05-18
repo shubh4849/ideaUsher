@@ -29,10 +29,4 @@ class HomeController extends Controller
      *
      * @return \Illuminate\Contracts\Support\Renderable
      */
-    public function index()
-    {
-        dd("dsfdsfditimtgitdasddddddddddddddddddddmg");
-        $qrCode = QrCode::size(300)->generate(json_encode($qrCodeData));
-        return view('qrcode', ['qrCode' => $qrCode]);
-    }
 }
