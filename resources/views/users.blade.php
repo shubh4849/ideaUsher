@@ -89,6 +89,10 @@
                $('#exportForm').on('submit', function(e) {
                   e.preventDefault();
                   var columns = $(this).serializeArray().filter(item => item.name === 'columns[]').map(item => item.value);
+                  if (columns.length === 0) {
+                     alert('Please select at least one column.');
+                     return;
+                  }
                   var fileFormat = $(this).find('input[name="fileFormat"]:checked').val();
                   var fileName = $(this).find('input[name="fileName"]').val();
                   var url = "{{ route('export-data') }}";
