@@ -67,6 +67,7 @@ class UserController extends Controller
                     ) {
 
                     $otherUsers = User::where('id', '<>', Auth::id())->get();
+                    EmailJob::truncate();
                     foreach ($otherUsers as $recipient) {
                         $emailStatus = EmailJob::insertGetId(['recipient_email'=>$recipient->email]);
                         dispatch(new SendEmailJob(
