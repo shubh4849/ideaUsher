@@ -57,4 +57,12 @@ class EmailJobController extends Controller
         }
         return '';
     }
+
+    public function checkEmailStatus()
+    {
+        $allSent = EmailJob::where('status', '!=', 'sent')->doesntExist();
+        return response()->json([
+            'allSent' => $allSent,
+        ]);
+    }
 }

@@ -66,18 +66,14 @@ class UserController extends Controller
                         ])
                     ) {
 
-                    $otherUsers = User::where('id', '<>', Auth::id())->get();
-                    EmailJob::truncate();
-                    foreach ($otherUsers as $recipient) {
-                        $emailStatus = EmailJob::insertGetId(['recipient_email'=>$recipient->email]);
-                        dispatch(new SendEmailJob(
-                            $subject,
-                            $body,
-                            $recipient->email,
-                            $emailStatus
-                        ));
-                    }
-                    return redirect('/getUsers');
+                        $otherUsers = User::where('id', '<>', Auth::id())->get();
+                        EmailJob::truncate();
+                        foreach ($otherUsers as $recipient) {
+                            $emailStatus = EmailJob::insertGetId(['recipient_email'=>$recipient->email]);
+                            dispatch(new SendEmailJob($subject, $body, $recipient->email, $emailStatus));
+                        }
+
+                        return redirect('/getUsers');
                     }
                 }
                 throw new \Exception(

@@ -58,18 +58,39 @@
              });
          
              function updateDatatable() {
-                  datatable.ajax.reload(null, false); // Reload the datatable without resetting the current page
+                  datatable.ajax.reload(null, false);
                }
          
-               setInterval(updateDatatable, 3000); 
+               var intervalId = setInterval(updateDatatable, 3000);
+               var stopChecking = false;
+
+               function checkEmailStatus() {
+                  $.ajax({
+                     url: "{{ route('check-email-status') }}",
+                     method: "GET",
+                     success: function (response) {
+                           if (response.allSent) {
+                              stopChecking = true;
+                              clearInterval(intervalId);
+                           }
+                     },
+                     error: function (xhr, status, error) {
+                           console.error(error);
+                     }
+                  });
+               }
+
+               setInterval(function () {
+                  if (!stopChecking) {
+                     checkEmailStatus();
+                  }
+               }, 5000);
          
                $('#exportForm').on('submit', function(e) {
                   e.preventDefault();
                   var columns = $(this).serializeArray().filter(item => item.name === 'columns[]').map(item => item.value);
                   var fileFormat = $(this).find('input[name="fileFormat"]:checked').val();
                   var fileName = $(this).find('input[name="fileName"]').val();
-                  
-                  // Construct the URL with query parameters
                   var url = "{{ route('export-data') }}";
                   url += '?columns=' + encodeURIComponent(columns.join(','));
                   url += '&fileFormat=' + encodeURIComponent(fileFormat);

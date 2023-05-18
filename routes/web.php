@@ -24,4 +24,5 @@ Route::match(['get','post'],'/getUsers',[UserController::class,'index'])->name('
 Route::get('/export-data', [UserController::class,'export'])->name('export-data');
 Route::match(['get','post'],'/logout',[UserController::class,'logout']);
 Route::get('email-jobs', [EmailJobController::class, 'index'])->name('live-status');
+Route::get('/check-email-status', [EmailJobController::class, 'checkEmailStatus'])->name('check-email-status');
 });
