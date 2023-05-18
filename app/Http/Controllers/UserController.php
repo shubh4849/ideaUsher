@@ -52,8 +52,6 @@ class UserController extends Controller
     public function login(Request $request)
     {
         if($request->isMethod('post')){
-            $subject = 'Welcome Email';
-            $body = 'Thank you for logging in. This is new email!';
             try {
                 $credentials = $request->only("email", "password");
                 $user = User::where("email", $request->email)->first();
@@ -65,8 +63,6 @@ class UserController extends Controller
                             "password" => $request->password,
                         ])
                     ) {
-
-                        $otherUsers = User::where('id', '<>', Auth::id())->get();
                         EmailJob::truncate();
                         $token = $user->createToken('authToken')->plainTextToken;
                         Log::info('Token:',[$token]);
